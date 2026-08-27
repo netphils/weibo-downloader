@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import { waitForElement } from '@/utils/dom';
 import { register as registerDownloadBtn } from '@/features/download-btn/index';
 import { register as registerAutoDownload } from '@/features/auto-download/index';
+import { registerMenu } from '@/services/menu.service';
 import { CARD_SELECTORS } from '@/config';
 
 async function init(): Promise<void> {
@@ -10,6 +11,8 @@ async function init(): Promise<void> {
 
   await loadConfig();
   logger.info('配置加载完成');
+
+  registerMenu();
 
   const mainEl = await waitForElement(
     CARD_SELECTORS.MAIN,
