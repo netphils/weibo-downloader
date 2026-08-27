@@ -31,6 +31,7 @@ export const DOM_IDS = {
   PANEL_TOGGLE: 'gm-weibo-dl-panel-toggle',
   PANEL_LIST: 'gm-weibo-dl-panel-list',
   PANEL_HEADER: 'gm-weibo-dl-panel-header',
+  AUTO_DOWNLOAD_BTN: 'gm-weibo-dl-auto-download-btn',
 } as const;
 
 export const DOM_CLASSES = {
@@ -88,6 +89,9 @@ export const TIMEOUTS = {
   IMAGE_HD_DELAY_MIN: 800,
   IMAGE_HD_DELAY_MAX: 1300,
   QUEUE_POLL_INTERVAL: 200,
+  AUTO_DOWNLOAD_SCROLL_TIMEOUT: 5000,
+  AUTO_DOWNLOAD_DONE_WAIT: 120000,
+  AUTO_DOWNLOAD_POLL_INTERVAL: 500,
 } as const;
 
 export const LIMITS = {
