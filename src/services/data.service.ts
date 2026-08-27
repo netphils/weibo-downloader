@@ -1,5 +1,5 @@
 import type { WeiboResource, ResourceUrlData } from '@/types';
-import type { PicInfo, MixMediaInfo } from '@/types';
+import type { PicInfo, MixMediaInfo, PageInfo } from '@/types';
 import { getInfoById, getVideoHD } from './weibo-api.service';
 import { API_ENDPOINTS } from '@/config';
 
@@ -39,20 +39,22 @@ function extractPidFromUrl(url: string): string | null {
   return match ? match[1] : null;
 }
 
-export async function getFileUrlByInfo(
-  dom: Element,
+function handlePageInfo(pageInfo: PageInfo): string {
+  const playbackList = pageInfo.media_info?.playback_list;
+  if (playbackList && playbackList.length > 0) {
+    return playbackList[0].play_info.url || '';
+  }
+  if (pageInfo.object_type === 'live') {
+    return pageInfo.media_info?.replay_hd || '';
+  }
+  return pageInfo.media_info?.stream_url || '';
+}
+
+export async function getResourceById(
+  id: string,
   isImageHD: boolean,
   isVideoHD: boolean
 ): Promise<WeiboResource | null> {
-  const linkEl = dom.querySelector('a');
-  const href = linkEl?.getAttribute('href') || '';
-  const idMatch = href.match(/(?<=\d+\/)(\w+)/);
-  const id = idMatch ? idMatch[0] : '';
-
-  if (!id) {
-    return null;
-  }
-
   const statusResponse = await getInfoById(id);
   if (!statusResponse) {
     return null;
@@ -61,6 +63,7 @@ export async function getFileUrlByInfo(
   const {
     pic_infos: picInfos,
     mix_media_info: mixMediaInfo,
+    page_info: pageInfo,
     text_raw: textRaw = '',
     isLongText = false,
     mblogid = '',
@@ -92,7 +95,14 @@ export async function getFileUrlByInfo(
   }
 
   if (mixMediaInfo) {
-    processMixMedia(mixMediaInfo, urlData, isImageHD, isVideoHD);
+    await processMixMedia(mixMediaInfo, urlData, isImageHD, isVideoHD);
+  }
+
+  if (pageInfo && Object.keys(urlData).length === 0) {
+    const videoUrl = handlePageInfo(pageInfo);
+    if (videoUrl) {
+      urlData[`video.${getSuffixName(videoUrl)}`] = videoUrl;
+    }
   }
 
   return {
@@ -156,4 +166,21 @@ async function processMixMedia(
       }
     }
   }
+}
+
+export function extractWeiboId(card: Element): string | null {
+  const links = card.querySelectorAll('a');
+  for (const link of links) {
+    const href = link.getAttribute('href') || '';
+    const match = href.match(/\/(\d+)\/(\w+)/);
+    if (match) {
+      return match[2];
+    }
+  }
+  return null;
+}
+
+export function getFileName(resource: WeiboResource): string {
+  const { userName, time } = resource;
+  return `${userName} ${time}`.trim();
 }

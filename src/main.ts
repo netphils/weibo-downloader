@@ -1,15 +1,17 @@
 import { loadConfig } from '@/services/auth.service';
 import { logger } from '@/utils/logger';
 import { waitForElement } from '@/utils/dom';
+import { register as registerDownloadBtn } from '@/features/download-btn/index';
+import { CARD_SELECTORS } from '@/config';
 
 async function init(): Promise<void> {
   logger.info('微博下载器初始化中...');
 
-  const config = await loadConfig();
-  logger.info('配置加载完成', config);
+  await loadConfig();
+  logger.info('配置加载完成');
 
   const mainEl = await waitForElement(
-    '.Frame_content_3XrxZ, .m-main, ._content_1ubn9_18',
+    CARD_SELECTORS.MAIN,
     10000,
     500
   );
@@ -19,6 +21,7 @@ async function init(): Promise<void> {
     return;
   }
 
+  registerDownloadBtn();
   logger.info('微博下载器初始化完成');
 }
 

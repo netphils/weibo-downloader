@@ -29,6 +29,9 @@ export const STORAGE_KEYS = {
 
 export const DOM_IDS = {
   PANEL: 'gm-weibo-dl-panel',
+  PANEL_TOGGLE: 'gm-weibo-dl-panel-toggle',
+  PANEL_LIST: 'gm-weibo-dl-panel-list',
+  PANEL_HEADER: 'gm-weibo-dl-panel-header',
 } as const;
 
 export const DOM_CLASSES = {
@@ -41,7 +44,23 @@ export const DOM_CLASSES = {
   INPUT_BOX: 'gm-weibo-dl-input-box',
   IS_FIRST: 'gm-weibo-dl-is-first',
   OUT: 'gm-weibo-dl-out',
+  PANEL_COLLAPSED: 'gm-weibo-dl-panel-collapsed',
+  TASK_ITEM: 'gm-weibo-dl-task-item',
+  TASK_TITLE: 'gm-weibo-dl-task-title',
+  TASK_PROGRESS: 'gm-weibo-dl-task-progress',
+  TASK_PROGRESS_BAR: 'gm-weibo-dl-task-progress-bar',
+  TASK_STATUS: 'gm-weibo-dl-task-status',
 } as const;
+
+export const DOWNLOAD_STATE = {
+  IDLE: '下载',
+  PREPARING: '准备中',
+  DOWNLOADING: '下载中',
+  DONE: '完成',
+  ERROR: '失败',
+} as const;
+
+export type DownloadState = (typeof DOWNLOAD_STATE)[keyof typeof DOWNLOAD_STATE];
 
 export const DOWNLOAD_MESSAGE = {
   INIT: '',
@@ -49,6 +68,17 @@ export const DOWNLOAD_MESSAGE = {
   IS_EMPTY_ERROR: '失败，未找到资源',
   IS_UNKNOWN_ERROR: '失败，未知错误(点击重试)',
   FINISH: '完成',
+} as const;
+
+export const QUALITY = {
+  IMAGE: {
+    HD: 'hd',
+    NORMAL: 'normal',
+  },
+  VIDEO: {
+    HD: 'hd',
+    NORMAL: 'normal',
+  },
 } as const;
 
 export const TIMEOUTS = {
@@ -99,4 +129,12 @@ export const DEFAULT_CONFIG = {
   [STORAGE_KEYS.IS_FIRST]: true,
   [STORAGE_KEYS.MESSAGES_NUMBER]: LIMITS.MESSAGES_DEFAULT,
   [STORAGE_KEYS.NAME_ARR]: DEFAULT_NAME_ARR,
+} as const;
+
+export const CARD_SELECTORS = {
+  MAIN: '.Frame_content_3XrxZ, .m-main, ._content_1ubn9_18',
+  CARD_LIST: '.Main_full_1dfQX,.Frame_wrap_16as0,.main-full,._full_1l406_7,._wrap_100l0_2',
+  CARD_HEAD: 'div.card-feed div.from, .head-info_info_2AspQ, ._info_1tpft_10',
+  CARD_HEAD_LINK: 'a[suda-data], .head-info_time_6sFQg, ._time_1tpft_33',
+  ARTICLE: 'article',
 } as const;

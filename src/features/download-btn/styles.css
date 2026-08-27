@@ -1,0 +1,141 @@
+:root {
+  --gm-panel-bg: #fff;
+  --gm-panel-border: #e0e0e0;
+  --gm-accent: #ff8200;
+  --gm-accent-text: #fff;
+  --gm-success: #52c41a;
+  --gm-error: #ff4d4f;
+  --gm-text: #333;
+  --gm-text-secondary: #999;
+}
+
+.gm-weibo-dl-download-btn {
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 20px;
+  border: 1px solid var(--gm-accent);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--gm-accent);
+  background: var(--gm-accent-text);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.gm-weibo-dl-download-btn:hover {
+  background: var(--gm-accent);
+  color: var(--gm-accent-text);
+}
+
+.gm-weibo-dl-state-downloading {
+  background: var(--gm-accent);
+  color: var(--gm-accent-text);
+  cursor: default;
+}
+
+.gm-weibo-dl-state-done {
+  border-color: var(--gm-success);
+  color: var(--gm-success);
+  background: var(--gm-accent-text);
+}
+
+.gm-weibo-dl-state-error {
+  border-color: var(--gm-error);
+  color: var(--gm-error);
+  background: var(--gm-accent-text);
+}
+
+#gm-weibo-dl-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  width: 280px;
+  max-height: 400px;
+  background: var(--gm-panel-bg);
+  border: 1px solid var(--gm-panel-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#gm-weibo-dl-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gm-panel-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gm-text);
+  cursor: default;
+  user-select: none;
+}
+
+#gm-weibo-dl-panel-toggle {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--gm-panel-border);
+  border-radius: 4px;
+  background: var(--gm-panel-bg);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--gm-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gm-weibo-dl-panel-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 4px 0;
+}
+
+#gm-weibo-dl-panel.gm-weibo-dl-panel-collapsed #gm-weibo-dl-panel-list {
+  display: none;
+}
+
+.gm-weibo-dl-task-item {
+  padding: 6px 12px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.gm-weibo-dl-task-item:last-child {
+  border-bottom: none;
+}
+
+.gm-weibo-dl-task-title {
+  font-size: 12px;
+  color: var(--gm-text);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gm-weibo-dl-task-progress {
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.gm-weibo-dl-task-progress-bar {
+  height: 100%;
+  background: var(--gm-accent);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.gm-weibo-dl-task-status {
+  font-size: 11px;
+  color: var(--gm-text-secondary);
+}
