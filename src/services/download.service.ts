@@ -59,19 +59,17 @@ export async function downloadFileBlob(
   return null;
 }
 
-export async function packFilesToZip(
-  files: FileBlobResult[]
-): Promise<Blob> {
-  const zip = new JSZip();
-  for (const file of files) {
-    zip.file(file.fileName, file.blob);
+export function getExtFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    const match = pathname.match(/\.(\w+)$/);
+    if (match && !['json', null].includes(match[1])) {
+      return match[1];
+    }
+  } catch {
+    // URL parse failed
   }
-  const zipBlob = await zip.generateAsync({
-    type: 'blob',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 6 },
-  });
-  return zipBlob;
+  return 'mp4';
 }
 
 export function triggerDownload(blob: Blob, fileName: string): void {
@@ -79,6 +77,7 @@ export function triggerDownload(blob: Blob, fileName: string): void {
   const a = document.createElement('a');
   a.href = url;
   a.download = fileName;
+  document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);

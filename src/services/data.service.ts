@@ -1,7 +1,7 @@
 import type { WeiboResource, ResourceUrlData } from '@/types';
 import type { PicInfo, MixMediaInfo, PageInfo } from '@/types';
 import { getInfoById, getVideoHD } from './weibo-api.service';
-import { API_ENDPOINTS } from '@/config';
+import { API_ENDPOINTS, LIMITS } from '@/config';
 
 function getSuffixName(url: string): string {
   try {
@@ -183,4 +183,22 @@ export function extractWeiboId(card: Element): string | null {
 export function getFileName(resource: WeiboResource): string {
   const { userName, time } = resource;
   return `${userName} ${time}`.trim();
+}
+
+export function buildDownloadFileName(
+  resource: WeiboResource,
+  ext: string,
+  index: number,
+  total: number
+): string {
+  const { userID, text } = resource;
+  const rawText = text || '';
+  const textPreview = rawText.length === 0
+    ? LIMITS.FILE_NAME_EMPTY_TEXT
+    : rawText.length > LIMITS.FILE_NAME_PREVIEW_LENGTH
+      ? rawText.slice(0, LIMITS.FILE_NAME_PREVIEW_LENGTH) + LIMITS.FILE_NAME_ELLIPSIS
+      : rawText;
+
+  const base = `[${userID}]${textPreview}`;
+  return total === 1 ? `${base}.${ext}` : `${base}-${index}.${ext}`;
 }

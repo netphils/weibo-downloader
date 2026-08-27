@@ -5,12 +5,11 @@ import {
   STORAGE_KEYS,
 } from '@/config';
 import type { DownloadState } from '@/config';
-import { getResourceById, extractWeiboId, getFileName } from '@/services/data.service';
-import { downloadFileBlob, packFilesToZip, triggerDownload } from '@/services/download.service';
+import { getResourceById, extractWeiboId, buildDownloadFileName } from '@/services/data.service';
+import { downloadFileBlob, getExtFromUrl, triggerDownload } from '@/services/download.service';
 import type { FileBlobResult } from '@/services/download.service';
 import { getValueSync } from '@/utils/storage';
 import { updatePanelTask, addPanelTask } from './download-panel';
-import { logger } from '@/utils/logger';
 
 function createDownloadBtn(): HTMLElement {
   const btn = document.createElement('button');
@@ -65,19 +64,21 @@ async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
     return;
   }
 
-  const fileName = getFileName(resource);
   const urlEntries = Object.entries(resource.urlData);
 
-  addPanelTask(weiboId, fileName, urlEntries.length);
+  addPanelTask(weiboId, buildDownloadFileName(resource, '', 0, urlEntries.length), urlEntries.length);
 
   setBtnState(btn, DOWNLOAD_STATE.DOWNLOADING);
+  updatePanelTask(weiboId, { status: DOWNLOAD_STATE.DOWNLOADING });
 
   const downloadedFiles: FileBlobResult[] = [];
 
   for (let i = 0; i < urlEntries.length; i++) {
-    const [fileKey, fileUrl] = urlEntries[i];
+    const [, fileUrl] = urlEntries[i];
+    const ext = getExtFromUrl(fileUrl);
+    const downloadName = buildDownloadFileName(resource, ext, i + 1, urlEntries.length);
 
-    const result = await downloadFileBlob(fileUrl, fileKey, (progress) => {
+    const result = await downloadFileBlob(fileUrl, downloadName, (progress) => {
       updatePanelTask(weiboId, {
         currentItem: i + 1,
         totalItems: urlEntries.length,
@@ -103,20 +104,12 @@ async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
     return;
   }
 
-  try {
-    if (downloadedFiles.length === 1) {
-      triggerDownload(downloadedFiles[0].blob, downloadedFiles[0].fileName);
-    } else {
-      const zipBlob = await packFilesToZip(downloadedFiles);
-      triggerDownload(zipBlob, `${fileName}.zip`);
-    }
-    setBtnState(btn, DOWNLOAD_STATE.DONE);
-    updatePanelTask(weiboId, { status: DOWNLOAD_STATE.DONE });
-  } catch (err) {
-    logger.error('打包下载失败', err);
-    setBtnState(btn, DOWNLOAD_STATE.ERROR);
-    updatePanelTask(weiboId, { status: DOWNLOAD_STATE.ERROR });
+  for (const file of downloadedFiles) {
+    triggerDownload(file.blob, file.fileName);
   }
+
+  setBtnState(btn, DOWNLOAD_STATE.DONE);
+  updatePanelTask(weiboId, { status: DOWNLOAD_STATE.DONE });
 }
 
 export function initDownloadButtons(): void {

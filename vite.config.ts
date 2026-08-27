@@ -30,9 +30,6 @@ export default defineConfig({
           'cache.m.iqiyi.com',
           '*',
         ],
-        require: [
-          'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-        ],
         grant: [
           'GM_addStyle',
           'GM_setValue',

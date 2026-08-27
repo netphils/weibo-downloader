@@ -10,7 +10,6 @@ export interface AuthConfig {
   isIncludesText: boolean;
   isVideoHD: boolean;
   isImageHD: boolean;
-  isPack: boolean;
   isFirst: boolean;
   messagesNumber: number;
   nameArr: NameKey[];
@@ -45,10 +44,6 @@ export async function loadConfig(): Promise<AuthConfig> {
     isImageHD: await getValue<boolean>(
       STORAGE_KEYS.IS_IMAGE_HD,
       DEFAULT_CONFIG[STORAGE_KEYS.IS_IMAGE_HD]
-    ),
-    isPack: await getValue<boolean>(
-      STORAGE_KEYS.IS_PACK,
-      DEFAULT_CONFIG[STORAGE_KEYS.IS_PACK]
     ),
     isFirst: await getValue<boolean>(
       STORAGE_KEYS.IS_FIRST,
