@@ -24,6 +24,9 @@ export const STORAGE_KEYS = {
   IS_INCLUDES_TEXT: 'isIncludesText',
   IS_VIDEO_HD: 'isVideoHD',
   IS_IMAGE_HD: 'isImageHD',
+  SKIP_ORIGINAL: 'skipOriginal',
+  SKIP_RETWEET: 'skipRetweet',
+  SKIP_LIKED: 'skipLiked',
 } as const;
 
 export const DOM_IDS = {

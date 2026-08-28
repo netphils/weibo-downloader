@@ -77,6 +77,10 @@ export interface WeiboStatusResponse {
   created_at?: string;
   mblog_vip_type?: number;
   user: WeiboUser;
+  title?: {
+    text: string;
+  };
+  buttons?: unknown[];
 }
 
 export interface LongTextResponse {
