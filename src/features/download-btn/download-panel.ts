@@ -3,6 +3,7 @@ import {
   DOM_CLASSES,
   DOWNLOAD_STATE,
   TIMEOUTS,
+  LIMITS,
 } from '@/config';
 import type { DownloadState } from '@/config';
 
@@ -82,6 +83,13 @@ export function addPanelTask(id: string, title: string, totalItems: number): voi
     overallProgress: 0,
     status: DOWNLOAD_STATE.PREPARING,
   });
+
+  if (taskMap.size > LIMITS.PANEL_MAX_ENTRIES) {
+    const oldestKey = taskMap.keys().next().value as string;
+    if (oldestKey) {
+      taskMap.delete(oldestKey);
+    }
+  }
 
   if (hideTimer) {
     clearTimeout(hideTimer);

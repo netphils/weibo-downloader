@@ -109,6 +109,7 @@ export const LIMITS = {
   EMPTY_GIF_SIZE: 6000,
   DEFAULT_CONCURRENCY: 3,
   IMAGE_CONCURRENCY: 3,
+  PANEL_MAX_ENTRIES: 100,
 } as const;
 
 export const NAME_ALL = {
