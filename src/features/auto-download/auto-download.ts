@@ -61,11 +61,29 @@ function getVisibleCards(): CardEntry[] {
   return cards;
 }
 
+function isCardProcessed(card: CardEntry): boolean {
+  return (
+    processedIds.has(card.id) ||
+    card.btn.textContent === DOWNLOAD_STATE.DONE ||
+    card.btn.textContent === DOWNLOAD_STATE.ERROR
+  );
+}
+
 function findNextCard(): CardEntry | null {
   const cards = getVisibleCards();
-  for (const card of cards) {
-    if (!processedIds.has(card.id)) {
-      return card;
+
+  let lastProcessedIdx = -1;
+  for (let i = cards.length - 1; i >= 0; i--) {
+    if (isCardProcessed(cards[i])) {
+      lastProcessedIdx = i;
+      break;
+    }
+  }
+
+  const startIdx = lastProcessedIdx >= 0 ? lastProcessedIdx + 1 : 0;
+  for (let i = startIdx; i < cards.length; i++) {
+    if (!processedIds.has(cards[i].id)) {
+      return cards[i];
     }
   }
   return null;
