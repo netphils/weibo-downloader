@@ -14,6 +14,7 @@ import { logger } from '@/utils/logger';
 
 let running = false;
 let btnEl: HTMLElement | null = null;
+const processedIds = new Set<string>();
 
 function createButton(): HTMLElement {
   const btn = document.createElement('button');
@@ -40,26 +41,34 @@ function setRunning(state: boolean): void {
   }
 }
 
-function getDownloadButtons(): HTMLElement[] {
-  const articles = document.querySelectorAll(CARD_SELECTORS.ARTICLE);
-  const btns: HTMLElement[] = [];
-  articles.forEach((article) => {
-    const btn = article.querySelector(`.${DOM_CLASSES.DOWNLOAD_BTN}`) as HTMLElement;
-    if (btn) {
-      btns.push(btn);
-    }
-  });
-  return btns;
+interface CardEntry {
+  btn: HTMLElement;
+  article: Element;
+  id: string;
 }
 
-function findNextCardIndex(): number {
-  const btns = getDownloadButtons();
-  for (let i = btns.length - 1; i >= 0; i--) {
-    if (btns[i].textContent === DOWNLOAD_STATE.DONE) {
-      return i + 1;
+function getVisibleCards(): CardEntry[] {
+  const articles = document.querySelectorAll(CARD_SELECTORS.ARTICLE);
+  const cards: CardEntry[] = [];
+  articles.forEach((article) => {
+    const btn = article.querySelector(`.${DOM_CLASSES.DOWNLOAD_BTN}`) as HTMLElement;
+    if (!btn) return;
+    const id = extractWeiboId(article);
+    if (id) {
+      cards.push({ btn, article, id });
+    }
+  });
+  return cards;
+}
+
+function findNextCard(): CardEntry | null {
+  const cards = getVisibleCards();
+  for (const card of cards) {
+    if (!processedIds.has(card.id)) {
+      return card;
     }
   }
-  return 0;
+  return null;
 }
 
 async function waitForDownloadDone(btn: HTMLElement): Promise<void> {
@@ -74,25 +83,35 @@ async function waitForDownloadDone(btn: HTMLElement): Promise<void> {
   }
 }
 
-async function scrollAndWaitForNewCards(currentCount: number): Promise<boolean> {
+async function scrollAndWaitForNewCards(): Promise<boolean> {
   const startTime = Date.now();
+  let prevHeight = document.documentElement.scrollHeight;
+
   while (Date.now() - startTime < TIMEOUTS.AUTO_DOWNLOAD_SCROLL_TIMEOUT) {
     if (!running) return false;
 
-    window.scrollTo(0, document.body.scrollHeight);
+    window.scrollTo(0, document.documentElement.scrollHeight);
     await new Promise((r) => setTimeout(r, 1000));
 
-    const newCount = getDownloadButtons().length;
-    if (newCount > currentCount) {
-      return true;
-    }
+    // Check if any unprocessed cards appeared
+    const next = findNextCard();
+    if (next) return true;
 
-    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 10) {
-      await new Promise((r) => setTimeout(r, 1000));
-      const finalCount = getDownloadButtons().length;
-      if (finalCount > currentCount) {
-        return true;
+    // Check if scrolled to the bottom
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
+    if (atBottom) {
+      // Wait a bit more for lazy loading
+      await new Promise((r) => setTimeout(r, 2000));
+      const finalNext = findNextCard();
+      if (finalNext) return true;
+
+      // Check if page height changed (new content loaded)
+      const newHeight = document.documentElement.scrollHeight;
+      if (newHeight > prevHeight) {
+        prevHeight = newHeight;
+        continue;
       }
+
       return false;
     }
   }
@@ -114,41 +133,38 @@ function shouldSkipType(type: CardType): boolean {
 
 async function startAutoDownload(): Promise<void> {
   setRunning(true);
+  processedIds.clear();
   logger.info('自动下载开始');
 
   try {
     while (running) {
-      const nextIndex = findNextCardIndex();
-      const btns = getDownloadButtons();
+      let target = findNextCard();
 
-      if (nextIndex >= btns.length) {
-        const currentCount = btns.length;
-        const hasNew = await scrollAndWaitForNewCards(currentCount);
+      if (!target) {
+        const hasNew = await scrollAndWaitForNewCards();
         if (!hasNew) {
           logger.info('自动下载完成，无更多卡片');
           break;
         }
+        target = findNextCard();
+        if (!target) continue;
+      }
+
+      const { btn, article, id } = target;
+
+      const cardType = await getCardTypeById(id);
+      if (shouldSkipType(cardType)) {
+        logger.info(`跳过${cardType}类型卡片`, id);
+        processedIds.add(id);
+        btn.textContent = DOWNLOAD_STATE.DONE;
+        btn.className = `${DOM_CLASSES.DOWNLOAD_BTN} gm-weibo-dl-state-done`;
         continue;
       }
 
-      const targetBtn = btns[nextIndex];
-      const article = targetBtn.closest(CARD_SELECTORS.ARTICLE);
-      if (!article) continue;
-
-      const weiboId = extractWeiboId(article);
-      if (weiboId) {
-        const cardType = await getCardTypeById(weiboId);
-        if (shouldSkipType(cardType)) {
-          logger.info(`跳过${cardType}类型卡片`, weiboId);
-          targetBtn.textContent = DOWNLOAD_STATE.DONE;
-          targetBtn.className = `${DOM_CLASSES.DOWNLOAD_BTN} gm-weibo-dl-state-done`;
-          continue;
-        }
-      }
-
       article.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      targetBtn.click();
-      await waitForDownloadDone(targetBtn);
+      btn.click();
+      await waitForDownloadDone(btn);
+      processedIds.add(id);
     }
   } catch (err) {
     logger.error('自动下载异常', err);
