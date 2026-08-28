@@ -4,12 +4,7 @@ import {
   DOWNLOAD_STATE,
   CARD_SELECTORS,
   TIMEOUTS,
-  STORAGE_KEYS,
 } from '@/config';
-import { extractWeiboId } from '@/services/data.service';
-import { getCardTypeById } from '@/services/data.service';
-import type { CardType } from '@/services/data.service';
-import { getValueSync } from '@/utils/storage';
 import { logger } from '@/utils/logger';
 
 let running = false;
@@ -99,19 +94,6 @@ async function scrollAndWaitForNewCards(currentCount: number): Promise<boolean> 
   return false;
 }
 
-function shouldSkipType(type: CardType): boolean {
-  switch (type) {
-    case 'original':
-      return getValueSync<boolean>(STORAGE_KEYS.SKIP_ORIGINAL, false);
-    case 'retweet':
-      return getValueSync<boolean>(STORAGE_KEYS.SKIP_RETWEET, false);
-    case 'liked':
-      return getValueSync<boolean>(STORAGE_KEYS.SKIP_LIKED, false);
-    default:
-      return false;
-  }
-}
-
 async function startAutoDownload(): Promise<void> {
   setRunning(true);
   logger.info('自动下载开始');
@@ -133,20 +115,10 @@ async function startAutoDownload(): Promise<void> {
 
       const targetBtn = btns[nextIndex];
       const article = targetBtn.closest(CARD_SELECTORS.ARTICLE);
-      if (!article) continue;
-
-      const weiboId = extractWeiboId(article);
-      if (weiboId) {
-        const cardType = await getCardTypeById(weiboId);
-        if (shouldSkipType(cardType)) {
-          logger.info(`跳过${cardType}类型卡片`, weiboId);
-          targetBtn.textContent = DOWNLOAD_STATE.DONE;
-          targetBtn.className = `${DOM_CLASSES.DOWNLOAD_BTN} gm-weibo-dl-state-done`;
-          continue;
-        }
+      if (article) {
+        article.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
 
-      article.scrollIntoView({ behavior: 'smooth', block: 'center' });
       targetBtn.click();
       await waitForDownloadDone(targetBtn);
     }

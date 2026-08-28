@@ -3,16 +3,6 @@ import type { PicInfo, MixMediaInfo, PageInfo } from '@/types';
 import { getInfoById, getVideoHD } from './weibo-api.service';
 import { API_ENDPOINTS, LIMITS } from '@/config';
 
-export type CardType = 'original' | 'retweet' | 'liked';
-
-export async function getCardTypeById(id: string): Promise<CardType> {
-  const status = await getInfoById(id);
-  if (!status) return 'original';
-  if (status.title?.text?.includes('赞过')) return 'liked';
-  if (status.retweeted_status) return 'retweet';
-  return 'original';
-}
-
 function getSuffixName(url: string): string {
   try {
     const pathname = new URL(url).pathname;

@@ -18,21 +18,6 @@ const menuItems: MenuItem[] = [
     key: STORAGE_KEYS.IS_VIDEO_HD,
     label: '是否下载最高清的视频',
   },
-  {
-    id: 0,
-    key: STORAGE_KEYS.SKIP_ORIGINAL,
-    label: '自动下载跳过原创',
-  },
-  {
-    id: 0,
-    key: STORAGE_KEYS.SKIP_RETWEET,
-    label: '自动下载跳过转发',
-  },
-  {
-    id: 0,
-    key: STORAGE_KEYS.SKIP_LIKED,
-    label: '自动下载跳过赞过',
-  },
 ];
 
 function getMenuLabel(value: boolean, label: string): string {
