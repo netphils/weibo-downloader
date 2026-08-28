@@ -6,7 +6,7 @@ import {
 } from '@/config';
 import type { DownloadState } from '@/config';
 import { getResourceById, extractWeiboId, buildDownloadFileName } from '@/services/data.service';
-import { downloadFileBlob, getExtFromUrl, triggerDownload } from '@/services/download.service';
+import { downloadFileBlob, triggerDownload } from '@/services/download.service';
 import type { FileBlobResult } from '@/services/download.service';
 import { getValueSync } from '@/utils/storage';
 import { updatePanelTask, addPanelTask } from './download-panel';
@@ -74,8 +74,8 @@ async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
   const downloadedFiles: FileBlobResult[] = [];
 
   for (let i = 0; i < urlEntries.length; i++) {
-    const [, fileUrl] = urlEntries[i];
-    const ext = getExtFromUrl(fileUrl);
+    const [fileKey, fileUrl] = urlEntries[i];
+    const ext = fileKey.split('.').pop() || 'jpg';
     const downloadName = buildDownloadFileName(resource, ext, i + 1, urlEntries.length);
 
     const result = await downloadFileBlob(fileUrl, downloadName, (progress) => {

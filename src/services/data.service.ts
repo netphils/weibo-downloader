@@ -32,6 +32,7 @@ function formatNumber(num: number): string {
 
 function getPicUrlFromInfo(
   picInfo: PicInfo,
+  pid: string,
   mblogVipType: number,
   isImageHD: boolean
 ): string {
@@ -41,7 +42,7 @@ function getPicUrlFromInfo(
     return mw2000Url;
   }
 
-  return `${API_ENDPOINTS.DOWNLOAD_IMAGE}?pid=${picInfo.pid}`;
+  return `${API_ENDPOINTS.DOWNLOAD_IMAGE}?pid=${pid}`;
 }
 
 function extractPidFromUrl(url: string): string | null {
@@ -95,7 +96,7 @@ export async function getResourceById(
       const afterName = keys.length === 1 ? '' : `-part${formatNumber(index + 1)}`;
       const picInfo = picInfos[key];
 
-      const url = getPicUrlFromInfo(picInfo, mblogVipType, isImageHD);
+      const url = getPicUrlFromInfo(picInfo, key, mblogVipType, isImageHD);
       urlData[`${afterName}.${getSuffixName(picInfo.mw2000?.url || '')}`] = url;
 
       if (picInfo.type === 'livephoto' && picInfo.video) {
