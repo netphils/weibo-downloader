@@ -168,7 +168,7 @@ async function startAutoDownload(): Promise<void> {
         if (!target) continue;
       }
 
-      const { btn, article, id } = target;
+      const { btn, id } = target;
 
       const cardType = await getCardTypeById(id);
       if (shouldSkipType(cardType)) {
@@ -179,7 +179,6 @@ async function startAutoDownload(): Promise<void> {
         continue;
       }
 
-      article.scrollIntoView({ behavior: 'smooth', block: 'center' });
       btn.click();
       await waitForDownloadDone(btn);
       processedIds.add(id);
