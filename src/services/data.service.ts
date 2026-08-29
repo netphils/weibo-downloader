@@ -202,12 +202,13 @@ export function buildDownloadFileName(
   index: number,
   total: number
 ): string {
-  const { mblogid, text } = resource;
+  const { userID, time, text } = resource;
+  const dateStr = time.split(' ')[0];
   const rawText = text || '';
   const textPart = rawText.length === 0 ? LIMITS.FILE_NAME_EMPTY_TEXT : rawText;
 
   const suffix = total === 1 ? `.${ext}` : `-${index}.${ext}`;
-  const prefix = `[${mblogid}]`;
+  const prefix = `[${dateStr}][${userID}]`;
   const available = LIMITS.FILE_NAME_MAX_LENGTH - prefix.length - suffix.length;
 
   const truncated =
