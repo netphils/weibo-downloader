@@ -21,10 +21,10 @@ export async function downloadFileBlob(
 ): Promise<FileBlobResult | null> {
   for (let attempt = 0; attempt < retryLimit; attempt++) {
     try {
-      const res = await requestWithProgress<ArrayBuffer>(
+      const res = await requestWithProgress<Blob>(
         {
           url,
-          responseType: 'arraybuffer',
+          responseType: 'blob',
           headers: {
             referer: 'https://weibo.com/',
             'user-agent':
@@ -44,12 +44,11 @@ export async function downloadFileBlob(
         }
       );
 
-      const buffer = res.response;
-      if (buffer.byteLength <= 200) {
+      const blob = res.response;
+      if (blob.size <= 200 && blob.type === 'text/html; charset=utf-8') {
         return null;
       }
 
-      const blob = new Blob([buffer]);
       return { blob, fileName, finalUrl: res.finalUrl };
     } catch {
       if (attempt >= retryLimit - 1) {
@@ -75,10 +74,10 @@ export function getExtFromUrl(url: string): string {
 
 export function triggerDownload(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
-  GM_download({
-    url,
-    name: fileName,
-    saveAs: false,
-  });
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }

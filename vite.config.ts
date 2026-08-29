@@ -37,7 +37,6 @@ export default defineConfig({
           'GM_registerMenuCommand',
           'GM_unregisterMenuCommand',
           'GM_xmlhttpRequest',
-          'GM_download',
           'unsafeWindow',
         ],
         noframes: true,

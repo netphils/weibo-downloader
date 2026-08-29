@@ -61,16 +61,3 @@ declare function GM_registerMenuCommand(
 ): number;
 declare function GM_unregisterMenuCommand(id: number): void;
 
-interface GM_DownloadDetails {
-  url: string;
-  name: string;
-  headers?: Record<string, string>;
-  saveAs?: boolean;
-  onload?: () => void;
-  onerror?: (error: unknown) => void;
-  onprogress?: (progress: { done: number; loaded: number; total: number }) => void;
-  ontimeout?: () => void;
-}
-
-declare function GM_download(details: GM_DownloadDetails): void;
-
