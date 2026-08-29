@@ -1,13 +1,20 @@
-import { STORAGE_KEYS } from '@/config';
+import { STORAGE_KEYS, LIMITS } from '@/config';
 import { getValueSync, setValueSync } from '@/utils/storage';
 
-interface MenuItem {
+interface BoolMenuItem {
   id: number;
   key: string;
   label: string;
 }
 
-const menuItems: MenuItem[] = [
+interface IntMenuItem {
+  id: number;
+  key: string;
+  label: string;
+  defaultValue: number;
+}
+
+const boolMenuItems: BoolMenuItem[] = [
   {
     id: 0,
     key: STORAGE_KEYS.IS_IMAGE_HD,
@@ -35,20 +42,49 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-function getMenuLabel(value: boolean, label: string): string {
+const intMenuItems: IntMenuItem[] = [
+  {
+    id: 0,
+    key: STORAGE_KEYS.FILE_NAME_MAX_LENGTH,
+    label: '文件名最大长度',
+    defaultValue: LIMITS.FILE_NAME_MAX_LENGTH,
+  },
+];
+
+function getBoolLabel(value: boolean, label: string): string {
   return `${value ? '✔️' : '❌'} ${label}`;
 }
 
+function getIntLabel(value: number, label: string): string {
+  return `${label}: ${value} 字符`;
+}
+
 function refreshMenu(): void {
-  menuItems.forEach((item) => {
+  boolMenuItems.forEach((item) => {
     if (item.id) {
       GM_unregisterMenuCommand(item.id);
     }
     const value = getValueSync<boolean>(item.key, false);
-    item.id = GM_registerMenuCommand(getMenuLabel(value, item.label), () => {
-      const newValue = !value;
-      setValueSync(item.key, newValue);
+    item.id = GM_registerMenuCommand(getBoolLabel(value, item.label), () => {
+      setValueSync(item.key, !value);
       refreshMenu();
+    });
+  });
+
+  intMenuItems.forEach((item) => {
+    if (item.id) {
+      GM_unregisterMenuCommand(item.id);
+    }
+    const value = getValueSync<number>(item.key, item.defaultValue);
+    item.id = GM_registerMenuCommand(getIntLabel(value, item.label), () => {
+      const input = prompt(`请输入${item.label}（当前: ${value}）`, String(value));
+      if (input !== null) {
+        const num = parseInt(input, 10);
+        if (!isNaN(num) && num > 0) {
+          setValueSync(item.key, num);
+          refreshMenu();
+        }
+      }
     });
   });
 }

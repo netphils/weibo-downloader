@@ -1,7 +1,8 @@
 import type { WeiboResource, ResourceUrlData } from '@/types';
 import type { PicInfo, MixMediaInfo, PageInfo } from '@/types';
 import { getInfoById, getVideoHD } from './weibo-api.service';
-import { API_ENDPOINTS, LIMITS } from '@/config';
+import { API_ENDPOINTS, LIMITS, STORAGE_KEYS } from '@/config';
+import { getValueSync } from '@/utils/storage';
 
 export type CardType = 'original' | 'retweet' | 'liked';
 
@@ -207,9 +208,14 @@ export function buildDownloadFileName(
   const rawText = text || '';
   const textPart = rawText.length === 0 ? LIMITS.FILE_NAME_EMPTY_TEXT : rawText;
 
+  const maxLength = getValueSync<number>(
+    STORAGE_KEYS.FILE_NAME_MAX_LENGTH,
+    LIMITS.FILE_NAME_MAX_LENGTH
+  );
+
   const suffix = total === 1 ? `.${ext}` : `-${index}.${ext}`;
   const prefix = `[${dateStr}][${userID}]`;
-  const available = LIMITS.FILE_NAME_MAX_LENGTH - prefix.length - suffix.length;
+  const available = maxLength - prefix.length - suffix.length;
 
   const truncated =
     textPart.length > available

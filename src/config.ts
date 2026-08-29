@@ -27,6 +27,7 @@ export const STORAGE_KEYS = {
   SKIP_ORIGINAL: 'skipOriginal',
   SKIP_RETWEET: 'skipRetweet',
   SKIP_LIKED: 'skipLiked',
+  FILE_NAME_MAX_LENGTH: 'fileNameMaxLength',
 } as const;
 
 export const DOM_IDS = {
