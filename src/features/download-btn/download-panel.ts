@@ -23,14 +23,15 @@ let listEl: HTMLElement | null = null;
 let countEl: HTMLElement | null = null;
 let isCollapsed = false;
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
-let processedCount = 0;
+let downloadedCount = 0;
+let skippedCount = 0;
 
 function createPanel(): HTMLElement {
   const panel = document.createElement('div');
   panel.id = DOM_IDS.PANEL;
   panel.innerHTML = `
     <div id="${DOM_IDS.PANEL_HEADER}">
-      <span>下载任务 <span id="${DOM_IDS.PANEL_COUNT}">(0)</span></span>
+      <span>下载任务 <span id="${DOM_IDS.PANEL_COUNT}">(下:0 跳:0)</span></span>
       <button id="${DOM_IDS.PANEL_TOGGLE}" title="折叠/展开">−</button>
     </div>
     <div id="${DOM_IDS.PANEL_LIST}"></div>
@@ -55,7 +56,7 @@ function renderPanel(): void {
   }
 
   if (countEl) {
-    countEl.textContent = `(${processedCount})`;
+    countEl.textContent = `(下:${downloadedCount} 跳:${skippedCount})`;
   }
 
   const items = Array.from(taskMap.values()).reverse();
@@ -80,7 +81,7 @@ function renderPanel(): void {
 }
 
 export function addPanelTask(id: string, title: string, totalItems: number): void {
-  processedCount++;
+  downloadedCount++;
 
   taskMap.set(id, {
     id,
@@ -104,6 +105,11 @@ export function addPanelTask(id: string, title: string, totalItems: number): voi
     hideTimer = null;
   }
 
+  renderPanel();
+}
+
+export function incrementSkippedCount(): void {
+  skippedCount++;
   renderPanel();
 }
 

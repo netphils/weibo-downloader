@@ -11,6 +11,7 @@ import { getCardTypeById } from '@/services/data.service';
 import type { CardType } from '@/services/data.service';
 import { getValueSync } from '@/utils/storage';
 import { logger } from '@/utils/logger';
+import { incrementSkippedCount } from '@/features/download-btn/download-panel';
 
 let running = false;
 let btnEl: HTMLElement | null = null;
@@ -174,6 +175,7 @@ async function startAutoDownload(): Promise<void> {
       if (shouldSkipType(cardType)) {
         logger.info(`跳过${cardType}类型卡片`, id);
         processedIds.add(id);
+        incrementSkippedCount();
         btn.textContent = DOWNLOAD_STATE.DONE;
         btn.className = `${DOM_CLASSES.DOWNLOAD_BTN} gm-weibo-dl-state-done`;
         continue;
