@@ -35,6 +35,7 @@ export const DOM_IDS = {
   PANEL_TOGGLE: 'gm-weibo-dl-panel-toggle',
   PANEL_LIST: 'gm-weibo-dl-panel-list',
   PANEL_HEADER: 'gm-weibo-dl-panel-header',
+  PANEL_COUNT: 'gm-weibo-dl-panel-count',
   AUTO_DOWNLOAD_BTN: 'gm-weibo-dl-auto-download-btn',
 } as const;
 

@@ -20,15 +20,17 @@ interface TaskInfo {
 const taskMap = new Map<string, TaskInfo>();
 let panelEl: HTMLElement | null = null;
 let listEl: HTMLElement | null = null;
+let countEl: HTMLElement | null = null;
 let isCollapsed = false;
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
+let processedCount = 0;
 
 function createPanel(): HTMLElement {
   const panel = document.createElement('div');
   panel.id = DOM_IDS.PANEL;
   panel.innerHTML = `
     <div id="${DOM_IDS.PANEL_HEADER}">
-      <span>下载任务</span>
+      <span>下载任务 <span id="${DOM_IDS.PANEL_COUNT}">(0)</span></span>
       <button id="${DOM_IDS.PANEL_TOGGLE}" title="折叠/展开">−</button>
     </div>
     <div id="${DOM_IDS.PANEL_LIST}"></div>
@@ -50,6 +52,10 @@ function renderPanel(): void {
 
   if (panelEl) {
     panelEl.style.display = taskMap.size > 0 ? '' : 'none';
+  }
+
+  if (countEl) {
+    countEl.textContent = `(${processedCount})`;
   }
 
   const items = Array.from(taskMap.values()).reverse();
@@ -74,6 +80,8 @@ function renderPanel(): void {
 }
 
 export function addPanelTask(id: string, title: string, totalItems: number): void {
+  processedCount++;
+
   taskMap.set(id, {
     id,
     title,
@@ -125,5 +133,6 @@ export function removePanelTask(id: string): void {
 export function initPanel(): void {
   panelEl = createPanel();
   listEl = panelEl.querySelector(`#${DOM_IDS.PANEL_LIST}`) as HTMLElement;
+  countEl = panelEl.querySelector(`#${DOM_IDS.PANEL_COUNT}`) as HTMLElement;
   panelEl.style.display = 'none';
 }
