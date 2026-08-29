@@ -204,12 +204,16 @@ export function buildDownloadFileName(
 ): string {
   const { mblogid, text } = resource;
   const rawText = text || '';
-  const textPreview = rawText.length === 0
-    ? LIMITS.FILE_NAME_EMPTY_TEXT
-    : rawText.length > LIMITS.FILE_NAME_PREVIEW_LENGTH
-      ? rawText.slice(0, LIMITS.FILE_NAME_PREVIEW_LENGTH) + LIMITS.FILE_NAME_ELLIPSIS
-      : rawText;
+  const textPart = rawText.length === 0 ? LIMITS.FILE_NAME_EMPTY_TEXT : rawText;
 
-  const base = `[${mblogid}]${textPreview}`;
-  return total === 1 ? `${base}.${ext}` : `${base}-${index}.${ext}`;
+  const suffix = total === 1 ? `.${ext}` : `-${index}.${ext}`;
+  const prefix = `[${mblogid}]`;
+  const available = LIMITS.FILE_NAME_MAX_LENGTH - prefix.length - suffix.length;
+
+  const truncated =
+    textPart.length > available
+      ? textPart.slice(0, Math.max(0, available - 1)) + LIMITS.FILE_NAME_ELLIPSIS
+      : textPart;
+
+  return `${prefix}${truncated}${suffix}`;
 }
