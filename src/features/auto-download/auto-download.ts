@@ -150,6 +150,16 @@ function shouldSkipType(type: CardType): boolean {
   }
 }
 
+async function tryLoadMoreCards(): Promise<boolean> {
+  const hasNew = await scrollAndWaitForNewCards();
+  if (!hasNew) {
+    logger.info('自动下载完成，无更多卡片');
+    return false;
+  }
+  const next = findNextCard();
+  return next !== null;
+}
+
 async function startAutoDownload(): Promise<void> {
   setRunning(true);
   processedIds.clear();
@@ -160,9 +170,7 @@ async function startAutoDownload(): Promise<void> {
       let target = findNextCard();
 
       if (!target) {
-        const hasNew = await scrollAndWaitForNewCards();
-        if (!hasNew) {
-          logger.info('自动下载完成，无更多卡片');
+        if (!(await tryLoadMoreCards())) {
           break;
         }
         target = findNextCard();
