@@ -56,6 +56,7 @@ export const DOM_CLASSES = {
   TASK_PROGRESS: 'gm-weibo-dl-task-progress',
   TASK_PROGRESS_BAR: 'gm-weibo-dl-task-progress-bar',
   TASK_STATUS: 'gm-weibo-dl-task-status',
+  TASK_CANCEL: 'gm-weibo-dl-task-cancel',
   MARK_BTN: 'gm-weibo-dl-mark-btn',
 } as const;
 

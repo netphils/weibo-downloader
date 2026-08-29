@@ -26,6 +26,15 @@ let hideTimer: ReturnType<typeof setTimeout> | null = null;
 let downloadedCount = 0;
 let skippedCount = 0;
 
+function removeTask(id: string): void {
+  taskMap.delete(id);
+  if (hideTimer) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+  renderPanel();
+}
+
 function createPanel(): HTMLElement {
   const panel = document.createElement('div');
   panel.id = DOM_IDS.PANEL;
@@ -42,6 +51,17 @@ function createPanel(): HTMLElement {
     isCollapsed = !isCollapsed;
     panel.classList.toggle(DOM_CLASSES.PANEL_COLLAPSED, isCollapsed);
     toggleBtn.textContent = isCollapsed ? '+' : '−';
+  });
+
+  const list = panel.querySelector(`#${DOM_IDS.PANEL_LIST}`) as HTMLElement;
+  list.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains(DOM_CLASSES.TASK_CANCEL)) {
+      const id = target.getAttribute('data-task-id');
+      if (id) {
+        removeTask(id);
+      }
+    }
   });
 
   document.body.appendChild(panel);
@@ -64,7 +84,10 @@ function renderPanel(): void {
     .map(
       (task) => `
     <div class="${DOM_CLASSES.TASK_ITEM}">
-      <div class="${DOM_CLASSES.TASK_TITLE}">${task.title}</div>
+      <div class="${DOM_CLASSES.TASK_TITLE}">
+        <span>${task.title}</span>
+        <button class="${DOM_CLASSES.TASK_CANCEL}" data-task-id="${task.id}" title="取消下载">×</button>
+      </div>
       <div class="${DOM_CLASSES.TASK_PROGRESS}">
         <div class="${DOM_CLASSES.TASK_PROGRESS_BAR}" style="width:${task.overallProgress.toFixed(1)}%"></div>
       </div>
@@ -96,7 +119,7 @@ export function addPanelTask(id: string, title: string, totalItems: number): voi
   if (taskMap.size > LIMITS.PANEL_MAX_ENTRIES) {
     const oldestKey = taskMap.keys().next().value as string;
     if (oldestKey) {
-      taskMap.delete(oldestKey);
+      removeTask(oldestKey);
     }
   }
 
@@ -125,15 +148,13 @@ export function updatePanelTask(
 
   if (task.status === DOWNLOAD_STATE.DONE || task.status === DOWNLOAD_STATE.ERROR) {
     hideTimer = setTimeout(() => {
-      taskMap.delete(id);
-      renderPanel();
+      removeTask(id);
     }, TIMEOUTS.AUTO_HIDE_DELAY);
   }
 }
 
 export function removePanelTask(id: string): void {
-  taskMap.delete(id);
-  renderPanel();
+  removeTask(id);
 }
 
 export function initPanel(): void {

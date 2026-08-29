@@ -112,12 +112,37 @@
 }
 
 .gm-weibo-dl-task-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 12px;
   color: var(--gm-text);
   margin-bottom: 4px;
+}
+
+.gm-weibo-dl-task-title span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+.gm-weibo-dl-task-cancel {
+  flex-shrink: 0;
+  margin-left: 6px;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #999;
+  background: transparent;
+  transition: color 0.2s;
+}
+
+.gm-weibo-dl-task-cancel:hover {
+  color: var(--gm-error);
 }
 
 .gm-weibo-dl-task-progress {
