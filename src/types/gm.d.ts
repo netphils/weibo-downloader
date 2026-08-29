@@ -4,9 +4,10 @@ declare namespace GM {
     method?: 'GET' | 'POST' | 'HEAD';
     headers?: Record<string, string>;
     data?: string | FormData;
-    responseType?: 'json' | 'blob' | 'arraybuffer' | 'text' | 'document';
+    responseType?: 'json' | 'blob' | 'arraybuffer' | 'text' | 'document' | 'stream';
     timeout?: number;
     onload?: (response: GM.Response) => void;
+    onloadstart?: (response: GM.StreamResponse) => void;
     onerror?: (error: GM.Response) => void;
     onprogress?: (progress: GM.Progress) => void;
     ontimeout?: () => void;
@@ -28,6 +29,15 @@ declare namespace GM {
     responseHeaders: string;
     responseText: string;
     responseXML: Document | null;
+    status: number;
+    statusText: string;
+    finalUrl: string;
+  }
+
+  interface StreamResponse {
+    readyState: number;
+    response: ReadableStream<Uint8Array>;
+    responseHeaders: string;
     status: number;
     statusText: string;
     finalUrl: string;
