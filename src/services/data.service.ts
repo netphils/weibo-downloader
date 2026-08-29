@@ -202,7 +202,7 @@ export function buildDownloadFileName(
   index: number,
   total: number
 ): string {
-  const { userID, text } = resource;
+  const { mblogid, text } = resource;
   const rawText = text || '';
   const textPreview = rawText.length === 0
     ? LIMITS.FILE_NAME_EMPTY_TEXT
@@ -210,6 +210,6 @@ export function buildDownloadFileName(
       ? rawText.slice(0, LIMITS.FILE_NAME_PREVIEW_LENGTH) + LIMITS.FILE_NAME_ELLIPSIS
       : rawText;
 
-  const base = `[${userID}]${textPreview}`;
+  const base = `[${mblogid}]${textPreview}`;
   return total === 1 ? `${base}.${ext}` : `${base}-${index}.${ext}`;
 }
