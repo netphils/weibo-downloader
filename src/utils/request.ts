@@ -59,12 +59,16 @@ export function requestWithProgress<T = unknown>(
       responseType: options.responseType || 'blob',
       timeout: options.timeout,
       onload: (res) => {
-        resolve({
-          status: res.status,
-          response: res.response as T,
-          responseHeaders: res.responseHeaders,
-          finalUrl: res.finalUrl,
-        });
+        try {
+          resolve({
+            status: res.status,
+            response: res.response as T,
+            responseHeaders: res.responseHeaders,
+            finalUrl: res.finalUrl,
+          });
+        } catch (err) {
+          reject(err);
+        }
       },
       onerror: (err) => {
         reject(err);

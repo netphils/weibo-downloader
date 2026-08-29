@@ -50,7 +50,10 @@ export async function downloadFileBlob(
       }
 
       return { blob, fileName, finalUrl: res.finalUrl };
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'NotReadableError') {
+        return null;
+      }
       if (attempt >= retryLimit - 1) {
         return null;
       }
