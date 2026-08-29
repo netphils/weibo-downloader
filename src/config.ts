@@ -28,6 +28,7 @@ export const STORAGE_KEYS = {
   SKIP_RETWEET: 'skipRetweet',
   SKIP_LIKED: 'skipLiked',
   FILE_NAME_MAX_LENGTH: 'fileNameMaxLength',
+  MARKED_IDS: 'markedWeiboIds',
 } as const;
 
 export const DOM_IDS = {
@@ -55,6 +56,7 @@ export const DOM_CLASSES = {
   TASK_PROGRESS: 'gm-weibo-dl-task-progress',
   TASK_PROGRESS_BAR: 'gm-weibo-dl-task-progress-bar',
   TASK_STATUS: 'gm-weibo-dl-task-status',
+  MARK_BTN: 'gm-weibo-dl-mark-btn',
 } as const;
 
 export const DOWNLOAD_STATE = {

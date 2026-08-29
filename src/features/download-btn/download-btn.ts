@@ -8,8 +8,52 @@ import type { DownloadState } from '@/config';
 import { getResourceById, extractWeiboId, buildDownloadFileName } from '@/services/data.service';
 import { downloadFileBlob, triggerDownload } from '@/services/download.service';
 import type { FileBlobResult } from '@/services/download.service';
-import { getValueSync } from '@/utils/storage';
+import { getValueSync, setValueSync } from '@/utils/storage';
 import { updatePanelTask, addPanelTask } from './download-panel';
+
+function getMarkedIds(): string[] {
+  try {
+    return JSON.parse(getValueSync<string>(STORAGE_KEYS.MARKED_IDS, '[]'));
+  } catch {
+    return [];
+  }
+}
+
+function setMarkedIds(ids: string[]): void {
+  setValueSync(STORAGE_KEYS.MARKED_IDS, JSON.stringify(ids));
+}
+
+function isMarked(id: string): boolean {
+  return getMarkedIds().includes(id);
+}
+
+function toggleMark(btn: HTMLElement, id: string): void {
+  const ids = getMarkedIds();
+  const idx = ids.indexOf(id);
+  if (idx >= 0) {
+    ids.splice(idx, 1);
+  } else {
+    ids.push(id);
+  }
+  setMarkedIds(ids);
+  updateMarkBtn(btn, ids.includes(id));
+}
+
+function createMarkBtn(): HTMLElement {
+  const btn = document.createElement('button');
+  btn.className = DOM_CLASSES.MARK_BTN;
+  btn.title = '标记/取消标记';
+  return btn;
+}
+
+function updateMarkBtn(btn: HTMLElement, marked: boolean): void {
+  btn.textContent = marked ? '★' : '☆';
+  if (marked) {
+    btn.classList.add('gm-weibo-dl-marked');
+  } else {
+    btn.classList.remove('gm-weibo-dl-marked');
+  }
+}
 
 function createDownloadBtn(): HTMLElement {
   const btn = document.createElement('button');
@@ -31,6 +75,8 @@ function insertDownloadBtn(article: Element): void {
 
   if (header.querySelector(`.${DOM_CLASSES.DOWNLOAD_BTN}`)) return;
 
+  const weiboId = extractWeiboId(article);
+
   const btn = createDownloadBtn();
 
   btn.addEventListener('click', async (e) => {
@@ -44,6 +90,17 @@ function insertDownloadBtn(article: Element): void {
   });
 
   header.appendChild(btn);
+
+  if (weiboId) {
+    const markBtn = createMarkBtn();
+    updateMarkBtn(markBtn, isMarked(weiboId));
+    markBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      toggleMark(markBtn, weiboId);
+    });
+    header.appendChild(markBtn);
+  }
 }
 
 async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
