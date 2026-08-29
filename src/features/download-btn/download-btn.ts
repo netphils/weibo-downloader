@@ -6,8 +6,8 @@ import {
 } from '@/config';
 import type { DownloadState } from '@/config';
 import { getResourceById, extractWeiboId, buildDownloadFileName } from '@/services/data.service';
-import { downloadFileBlob, triggerDownload } from '@/services/download.service';
-import type { FileBlobResult } from '@/services/download.service';
+import { downloadFileDirect } from '@/services/download.service';
+import type { DownloadProgress } from '@/services/download.service';
 import { getValueSync, setValueSync } from '@/utils/storage';
 import { updatePanelTask, addPanelTask } from './download-panel';
 
@@ -128,24 +128,25 @@ async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
   setBtnState(btn, DOWNLOAD_STATE.DOWNLOADING);
   updatePanelTask(weiboId, { status: DOWNLOAD_STATE.DOWNLOADING });
 
-  const downloadedFiles: FileBlobResult[] = [];
+  let successCount = 0;
 
   for (let i = 0; i < urlEntries.length; i++) {
     const [fileKey, fileUrl] = urlEntries[i];
     const ext = fileKey.split('.').pop() || 'jpg';
     const downloadName = buildDownloadFileName(resource, ext, i + 1, urlEntries.length);
 
-    const result = await downloadFileBlob(fileUrl, downloadName, (progress) => {
-      updatePanelTask(weiboId, {
-        currentItem: i + 1,
-        totalItems: urlEntries.length,
-        itemProgress: progress.percentage,
-        overallProgress: ((i + progress.percentage / 100) / urlEntries.length) * 100,
+    try {
+      await downloadFileDirect(fileUrl, downloadName, (progress: DownloadProgress) => {
+        updatePanelTask(weiboId, {
+          currentItem: i + 1,
+          totalItems: urlEntries.length,
+          itemProgress: progress.percentage,
+          overallProgress: ((i + progress.percentage / 100) / urlEntries.length) * 100,
+        });
       });
-    });
-
-    if (result) {
-      downloadedFiles.push(result);
+      successCount++;
+    } catch {
+      // download failed, continue to next file
     }
 
     updatePanelTask(weiboId, {
@@ -155,14 +156,10 @@ async function handleDownload(card: Element, btn: HTMLElement): Promise<void> {
     });
   }
 
-  if (downloadedFiles.length === 0) {
+  if (successCount === 0) {
     setBtnState(btn, DOWNLOAD_STATE.ERROR);
     updatePanelTask(weiboId, { status: DOWNLOAD_STATE.ERROR });
     return;
-  }
-
-  for (const file of downloadedFiles) {
-    triggerDownload(file.blob, file.fileName);
   }
 
   setBtnState(btn, DOWNLOAD_STATE.DONE);

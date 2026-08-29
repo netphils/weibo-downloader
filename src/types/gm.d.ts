@@ -62,3 +62,28 @@ declare function GM_registerMenuCommand(
 ): number;
 declare function GM_unregisterMenuCommand(id: number): void;
 
+declare function GM_download(details: GM.DownloadDetails): void;
+declare function GM_download(url: string, name: string): void;
+
+declare namespace GM {
+  interface DownloadDetails {
+    url: string;
+    name: string;
+    headers?: Record<string, string>;
+    saveAs?: boolean;
+    conflictAction?: 'uniquify' | 'overwrite' | 'prompt';
+    onload?: () => void;
+    onerror?: (error: GM.DownloadError) => void;
+    onprogress?: (progress: GM.Progress) => void;
+    ontimeout?: () => void;
+  }
+
+  interface DownloadError {
+    error: string;
+    details?: unknown;
+  }
+
+  function download(details: DownloadDetails): void;
+  function download(url: string, name: string): void;
+}
+
