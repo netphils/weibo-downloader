@@ -1,4 +1,5 @@
-import { REQUEST_HEADERS, TIMEOUTS } from '@/config';
+import { requestWithProgress } from '@/utils/request';
+import { TIMEOUTS } from '@/config';
 
 export interface FileBlobResult {
   blob: Blob;
@@ -20,13 +21,36 @@ export async function downloadFileBlob(
 ): Promise<FileBlobResult | null> {
   for (let attempt = 0; attempt < retryLimit; attempt++) {
     try {
-      const res = await requestStream(url, onProgress);
+      const res = await requestWithProgress<Blob>(
+        {
+          url,
+          responseType: 'blob',
+          fetch: true,
+          headers: {
+            referer: 'https://weibo.com/',
+            'user-agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
+          },
+        },
+        (gmProgress) => {
+          if (gmProgress.lengthComputable) {
+            onProgress?.({
+              loaded: gmProgress.loaded,
+              total: gmProgress.totalSize,
+              percentage: gmProgress.totalSize > 0
+                ? (gmProgress.loaded / gmProgress.totalSize) * 100
+                : 0,
+            });
+          }
+        }
+      );
 
-      if (res.blob.size <= 200 && res.blob.type === 'text/html; charset=utf-8') {
+      const blob = res.response;
+      if (blob.size <= 200 && blob.type === 'text/html; charset=utf-8') {
         return null;
       }
 
-      return { blob: res.blob, fileName, finalUrl: res.finalUrl };
+      return { blob, fileName, finalUrl: res.finalUrl };
     } catch {
       if (attempt >= retryLimit - 1) {
         return null;
@@ -34,66 +58,6 @@ export async function downloadFileBlob(
     }
   }
   return null;
-}
-
-interface StreamResult {
-  blob: Blob;
-  finalUrl: string;
-}
-
-function requestStream(
-  url: string,
-  onProgress?: (progress: DownloadProgress) => void
-): Promise<StreamResult> {
-  return new Promise((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-    let totalLoaded = 0;
-
-    GM.xmlHttpRequest({
-      url,
-      method: 'GET',
-      responseType: 'stream',
-      headers: {
-        ...REQUEST_HEADERS,
-        'user-agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
-      },
-      onloadstart: async (res) => {
-        const stream = res.response;
-        const reader = stream.getReader();
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            chunks.push(value);
-            totalLoaded += value.length;
-
-            onProgress?.({
-              loaded: totalLoaded,
-              total: 0,
-              percentage: 0,
-            });
-          }
-
-          const contentType = parseContentType(res.responseHeaders);
-          const blob = new Blob(chunks, { type: contentType });
-          resolve({ blob, finalUrl: res.finalUrl });
-        } catch (err) {
-          reject(err);
-        }
-      },
-      onerror: (err) => {
-        reject(err);
-      },
-    });
-  });
-}
-
-function parseContentType(headers: string): string {
-  const match = headers.match(/content-type:\s*([^\s;]+)/i);
-  return match ? match[1] : 'application/octet-stream';
 }
 
 export function getExtFromUrl(url: string): string {

@@ -6,6 +6,7 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   data?: string | FormData;
   responseType?: 'json' | 'blob' | 'arraybuffer' | 'text' | 'document';
+  fetch?: boolean;
   timeout?: number;
 }
 
@@ -57,6 +58,7 @@ export function requestWithProgress<T = unknown>(
       },
       data: options.data,
       responseType: options.responseType || 'blob',
+      fetch: options.fetch,
       timeout: options.timeout,
       onload: (res) => {
         resolve({
