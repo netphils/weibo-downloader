@@ -81,5 +81,5 @@ export function triggerDownload(blob: Blob, fileName: string): void {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  setTimeout(() => URL.revokeObjectURL(url), TIMEOUTS.BLOB_URL_REVOKE_DELAY);
 }
