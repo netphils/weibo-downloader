@@ -1,4 +1,3 @@
-import { requestWithProgress } from '@/utils/request';
 import { TIMEOUTS } from '@/config';
 
 export interface FileBlobResult {
@@ -21,36 +20,15 @@ export async function downloadFileBlob(
 ): Promise<FileBlobResult | null> {
   for (let attempt = 0; attempt < retryLimit; attempt++) {
     try {
-      const res = await requestWithProgress<Blob>(
-        {
-          url,
-          responseType: 'blob',
-          fetch: true,
-          headers: {
-            referer: 'https://weibo.com/',
-            'user-agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
-          },
-        },
-        (gmProgress) => {
-          if (gmProgress.lengthComputable) {
-            onProgress?.({
-              loaded: gmProgress.loaded,
-              total: gmProgress.totalSize,
-              percentage: gmProgress.totalSize > 0
-                ? (gmProgress.loaded / gmProgress.totalSize) * 100
-                : 0,
-            });
-          }
-        }
-      );
+      const result = await xhrDownload(url, onProgress);
+      if (!result) return null;
 
-      const blob = res.response;
+      const { blob, finalUrl } = result;
       if (blob.size <= 200 && blob.type === 'text/html; charset=utf-8') {
         return null;
       }
 
-      return { blob, fileName, finalUrl: res.finalUrl };
+      return { blob, fileName, finalUrl };
     } catch {
       if (attempt >= retryLimit - 1) {
         return null;
@@ -58,6 +36,36 @@ export async function downloadFileBlob(
     }
   }
   return null;
+}
+
+function xhrDownload(
+  url: string,
+  onProgress?: (progress: DownloadProgress) => void
+): Promise<{ blob: Blob; finalUrl: string } | null> {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+
+    xhr.onprogress = (e: ProgressEvent<EventTarget>): void => {
+      if (e.lengthComputable) {
+        onProgress?.({
+          loaded: e.loaded,
+          total: e.total,
+          percentage: e.total > 0 ? (e.loaded / e.total) * 100 : 0,
+        });
+      }
+    };
+
+    xhr.onload = (): void => {
+      const blob = xhr.response as Blob;
+      resolve({ blob, finalUrl: xhr.responseURL || url });
+    };
+
+    xhr.onerror = (): void => resolve(null);
+    xhr.onabort = (): void => resolve(null);
+    xhr.send();
+  });
 }
 
 export function getExtFromUrl(url: string): string {
